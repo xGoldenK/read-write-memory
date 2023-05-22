@@ -33,10 +33,8 @@ int memory::get_proc_id(const std::wstring& process_name) {
         hResult = Process32Next(hSnapshot, &pe);
     }
 
-    if(pid == 0) {
-        std::cout << "Could not find process \"" << process_name.c_str() << "\"." << std::endl;
-        std::cout << "Last error: " << GetLastError() << std::endl;
-    }
+    if(pid == 0)
+        std::cout << "Could not find process \"" << process_name.c_str() << "\"." << GetLastError() << std::endl;
 
     // closes an open handle (CreateToolhelp32Snapshot)
     CloseHandle(hSnapshot);
@@ -44,35 +42,11 @@ int memory::get_proc_id(const std::wstring& process_name) {
 }
 
 HANDLE memory::get_process_handle(int process_id) {
-    HANDLE h = OpenProcess(PROCESS_CREATE_PROCESS, FALSE, process_id);
-    if(!h) {
-        std::cout << "Could not get handle for pid: " << process_id << "." << std::endl;
-        std::cout << "Last error: " << GetLastError() << std::endl;
-    }
+    HANDLE h = OpenProcess(PROCESS_ALL_ACCESS, FALSE, process_id);
+    if(!h)
+        std::cout << "Could not get handle for pid: " << process_id << ". " << GetLastError() << std::endl;
 
     return h;
-}
-
-BOOL memory::write_to_process(HANDLE process, LPVOID address, LPCVOID buffer) {
-    BOOL result = FALSE;
-    SIZE_T bytes_written = 0;
-
-    result = WriteProcessMemory(process, address, buffer, sizeof(buffer), &bytes_written);
-    if(bytes_written == 0)
-        std::cout << "WriteProcessMemory wrote 0 bytes!" << std::endl;
-
-    return result;
-}
-
-BOOL memory::read_from_process(HANDLE process, LPVOID address, LPVOID* out_buffer) {
-    BOOL result = FALSE;
-    SIZE_T bytes_read = 0;
-
-    result = ReadProcessMemory(process, address, out_buffer, sizeof(out_buffer), &bytes_read);
-    if(bytes_read == 0)
-        std::cout << "ReadProcessMemory read 0 bytes!" << std::endl;
-
-    return result;
 }
 
 BOOL memory::set_debug_privilege(BOOL b) {
